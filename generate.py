@@ -4,9 +4,11 @@ from feedgen.feed import FeedGenerator
 
 SOURCE_RSS = "https://www.youtube.com/feeds/videos.xml?channel_id=UChCovZlgNh2x6Z57MJ5fhFw"
 
-KEYWORDS = [
-    "Compacto Top",
-    "Colo Colo"
+# Definimos los grupos de palabras. Cada lista interna requiere que TODAS 
+# sus palabras estén presentes. El video pasará si cumple con CUALQUIERA de los grupos.
+FILTROS = [
+    ["TNT Sports Replay", "Colo Colo"],
+    ["Copa", "Colo Colo"]
 ]
 
 rss_text = requests.get(SOURCE_RSS, timeout=30).text
@@ -19,8 +21,10 @@ fg.description("Videos filtrados de YouTube")
 
 for entry in feed.entries:
     title = entry.title
+    title_lower = title.lower()
 
-    if any(k.lower() in title.lower() for k in KEYWORDS):
+    # Evalúa si todos los elementos de al menos un grupo están en el título
+    if any(all(k.lower() in title_lower for k in grupo) for grupo in FILTROS):
         fe = fg.add_entry()
 
         fe.title(title)
@@ -33,3 +37,4 @@ for entry in feed.entries:
             fe.description(entry.summary)
 
 fg.rss_file("feed.xml")
+print("¡RSS generado y guardado como 'feed.xml' exitosamente!")
